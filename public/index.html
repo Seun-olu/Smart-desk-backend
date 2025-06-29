@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Desk Booking Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 Smart Desk Booking Assistant</h1>
+        
+        <form id="bookingForm">
+            <div class="form-group">
+                <label for="userId">User ID:</label>
+                <input type="text" id="userId" name="userId" value="user123" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="preferredTime">Preferred Time:</label>
+                <input type="datetime-local" id="preferredTime" name="preferredTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="durationHours">Duration (Hours):</label>
+                <select id="durationHours" name="durationHours" required>
+                    <option value="1">1 Hour</option>
+                    <option value="2" selected>2 Hours</option>
+                    <option value="4">4 Hours</option>
+                    <option value="8">8 Hours (Full Day)</option>
+                </select>
+            </div>
+            
+            <button type="submit">Get Smart Suggestion</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Set default time to tomorrow at 10 AM
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(10, 0, 0, 0);
+        document.getElementById('preferredTime').value = tomorrow.toISOString().slice(0, 16);
+
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = 'Getting smart suggestion...';
+            
+            const formData = {
+                userId: document.getElementById('userId').value,
+                preferredTime: document.getElementById('preferredTime').value,
+                durationHours: parseInt(document.getElementById('durationHours').value)
+            };
+            
+            try {
+                const response = await fetch('/api/smart-suggest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Smart Suggestion Found!</h3>
+                        <p><strong>Recommended Office:</strong> ${data.recommendedOffice.officeName}</p>
+                        <p><strong>Office ID:</strong> ${data.recommendedOffice.officeId}</p>
+                        <p><strong>Confidence Score:</strong> ${(data.recommendedOffice.confidenceScore * 100).toFixed(1)}%</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ Error</h3>
+                        <p>${data.error}</p>
+                        <p><small>Note: You may need to add test data to the database first.</small></p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Network Error</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 
