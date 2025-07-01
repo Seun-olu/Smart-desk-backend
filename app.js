@@ -3,7 +3,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 
+
 const smartSuggestRoutes = require('./routes/smartSuggest');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
@@ -30,6 +32,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/smart-suggest', smartSuggestRoutes);
 
 // AI mode endpoint

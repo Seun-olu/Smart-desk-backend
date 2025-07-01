@@ -14,15 +14,17 @@ const { getAISuggestion } = require('../services/aiSuggestService');
 
 async function smartSuggest(req, res) {
   try {
-    const { userId, preferredTime, durationHours } = req.body;
-    if (!userId || !preferredTime || !durationHours) {
+
+    const { preferredTime, durationHours } = req.body;
+    const email = req.user?.email;
+    if (!email || !preferredTime || !durationHours) {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
     const preferredStart = new Date(preferredTime);
     const preferredEnd = new Date(preferredStart.getTime() + durationHours * 60 * 60 * 1000);
 
-    // Fetch user data
-    const user = await User.findOne({ userId }).populate('bookingHistory');
+    // Fetch user data by email
+    const user = await User.findOne({ email }).populate('bookingHistory');
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
