@@ -1,3 +1,12 @@
+// Logout (clear cookie)
+exports.logout = (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  res.json({ success: true });
+};
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -19,7 +28,13 @@ exports.register = async (req, res) => {
       cancellations: 0,
     });
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '12h' });
-    res.status(201).json({ token });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 12 * 60 * 60 * 1000 // 12 hours
+    });
+    res.status(201).json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Registration failed.' });
   }
@@ -35,7 +50,13 @@ exports.login = async (req, res) => {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials.' });
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '12h' });
-    res.json({ token });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 12 * 60 * 60 * 1000 // 12 hours
+    });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Login failed.' });
   }
