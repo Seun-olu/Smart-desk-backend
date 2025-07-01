@@ -3,7 +3,8 @@ exports.logout = (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/'
   });
   res.json({ success: true });
 };
@@ -31,8 +32,9 @@ exports.register = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 12 * 60 * 60 * 1000 // 12 hours
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 12 * 60 * 60 * 1000, // 12 hours
+      path: '/'
     });
     res.status(201).json({ success: true });
   } catch (err) {
@@ -53,8 +55,9 @@ exports.login = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 12 * 60 * 60 * 1000 // 12 hours
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 12 * 60 * 60 * 1000, // 12 hours
+      path: '/'
     });
     res.json({ success: true });
   } catch (err) {
