@@ -1,3 +1,15 @@
+// Check authentication status
+exports.checkAuth = (req, res) => {
+  // This endpoint uses the requireAuth middleware, so if we reach here, user is authenticated
+  res.json({ 
+    authenticated: true, 
+    user: { 
+      id: req.user.id, 
+      email: req.user.email 
+    } 
+  });
+};
+
 // Logout (clear cookie)
 exports.logout = (req, res) => {
   res.clearCookie('token', {
